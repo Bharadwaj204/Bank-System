@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Lending System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .loan-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .payment-history {
+            margin-top: 20px;
+        }
+
+        .payment-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bank Lending System</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('newLoan')">New Loan</button>
+            <button class="tab" onclick="showTab('payment')">Make Payment</button>
+            <button class="tab" onclick="showTab('ledger')">View Ledger</button>
+            <button class="tab" onclick="showTab('allLoans')">All Loans</button>
+        </div>
+
+        <!-- New Loan Tab -->
+        <div id="newLoan" class="tab-content">
+            <h2>Create New Loan</h2>
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" placeholder="Enter customer name">
+            </div>
+            <div class="form-group">
+                <label for="loanAmount">Loan Amount (₹):</label>
+                <input type="number" id="loanAmount" placeholder="Enter loan amount">
+            </div>
+            <div class="form-group">
+                <label for="loanYears">Loan Period (Years):</label>
+                <input type="number" id="loanYears" placeholder="Enter loan period in years">
+            </div>
+            <div class="form-group">
+                <label for="interestRate">Interest Rate (% per year):</label>
+                <input type="number" id="interestRate" placeholder="Enter interest rate" step="0.1">
+            </div>
+            <button onclick="createLoan()">Create Loan</button>
+            <div id="loanResult"></div>
+        </div>
+
+        <!-- Payment Tab -->
+        <div id="payment" class="tab-content hidden">
+            <h2>Make Payment</h2>
+            <div class="form-group">
+                <label for="paymentLoanId">Select Loan:</label>
+                <select id="paymentLoanId">
+                    <option value="">Select a loan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="paymentAmount">Payment Amount (₹):</label>
+                <input type="number" id="paymentAmount" placeholder="Enter payment amount">
+            </div>
+            <div class="form-group">
+                <label for="paymentType">Payment Type:</label>
+                <select id="paymentType">
+                    <option value="EMI">EMI</option>
+                    <option value="LUMP_SUM">Lump Sum</option>
+                </select>
+            </div>
+            <button onclick="makePayment()">Make Payment</button>
+            <div id="paymentResult"></div>
+        </div>
+
+        <!-- Ledger Tab -->
+        <div id="ledger" class="tab-content hidden">
+            <h2>View Loan Ledger</h2>
+            <div class="form-group">
+                <label for="ledgerLoanId">Select Loan:</label>
+                <select id="ledgerLoanId">
+                    <option value="">Select a loan</option>
+                </select>
+            </div>
+            <button onclick="viewLedger()">View Ledger</button>
+            <div id="ledgerResult"></div>
+        </div>
+
+        <!-- All Loans Tab -->
+        <div id="allLoans" class="tab-content hidden">
+            <h2>All Loans</h2>
+            <button onclick="showAllLoans()">Refresh Loans</button>
+            <div id="allLoansResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple data storage
+        let loans = [];
+        let payments = [];
+        let loanCounter = 1;
+        let paymentCounter = 1;
+
+        // Add some sample data
+        loans.push({
+            id: 'LOAN001',
+            customerName: 'John Doe',
+            amount: 100000,
+            years: 2,
+            rate: 10,
+            totalAmount: 120000,
+            emi: 5000,
+            date: '2024-01-15'
+        });
+
+        payments.push({
+            id: 'PAY001',
+            loanId: 'LOAN001',
+            amount: 5000,
+            type: 'EMI',
+            date: '2024-02-15'
+        });
+
+        // Show/hide tabs
+        function showTab(tabName) {
+            // Hide all tabs
+            let tabs = document.querySelectorAll('.tab-content');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.add('hidden');
+            }
+
+            // Remove active class from all tab buttons
+            let tabButtons = document.querySelectorAll('.tab');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+
+            // Show selected tab
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+            // Update dropdowns
+            updateLoanDropdowns();
+        }
+
+        // Create new loan
+        function createLoan() {
+            let customerName = document.getElementById('customerName').value;
+            let loanAmount = parseFloat(document.getElementById('loanAmount').value);
+            let loanYears = parseInt(document.getElementById('loanYears').value);
+            let interestRate = parseFloat(document.getElementById('interestRate').value);
+
+            // Simple validation
+            if (!customerName || !loanAmount || !loanYears || !interestRate) {
+                showResult('loanResult', 'Please fill all fields', 'error');
+                return;
+            }
+
+            if (loanAmount <= 0 || loanYears <= 0 || interestRate <= 0) {
+                showResult('loanResult', 'Please enter valid positive numbers', 'error');
+                return;
+            }
+
+            // Calculate loan details
+            let interest = loanAmount * loanYears * (interestRate / 100);
+            let totalAmount = loanAmount + interest;
+            let emi = totalAmount / (loanYears * 12);
+
+            // Create loan object
+            let loan = {
+                id: 'LOAN' + String(loanCounter).padStart(3, '0'),
+                customerName: customerName,
+                amount: loanAmount,
+                years: loanYears,
+                rate: interestRate,
+                totalAmount: totalAmount,
+                emi: Math.round(emi),
+                date: getCurrentDate()
+            };
+
+            loans.push(loan);
+            loanCounter++;
+
+            // Show result
+            let resultHtml = '<h3>Loan Created Successfully!</h3>';
+            resultHtml += '<p><strong>Loan ID:</strong> ' + loan.id + '</p>';
+            resultHtml += '<p><strong>Customer:</strong> ' + loan.customerName + '</p>';
+            resultHtml += '<p><strong>Principal Amount:</strong> ₹' + loan.amount.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Total Amount:</strong> ₹' + loan.totalAmount.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Monthly EMI:</strong> ₹' + loan.emi.toLocaleString() + '</p>';
+            
+            showResult('loanResult', resultHtml, 'result');
+
+            // Clear form
+            document.getElementById('customerName').value = '';
+            document.getElementById('loanAmount').value = '';
+            document.getElementById('loanYears').value = '';
+            document.getElementById('interestRate').value = '';
+
+            updateLoanDropdowns();
+        }
+
+        // Make payment
+        function makePayment() {
+            let loanId = document.getElementById('paymentLoanId').value;
+            let paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+            let paymentType = document.getElementById('paymentType').value;
+
+            if (!loanId || !paymentAmount) {
+                showResult('paymentResult', 'Please select loan and enter payment amount', 'error');
+                return;
+            }
+
+            if (paymentAmount <= 0) {
+                showResult('paymentResult', 'Payment amount must be positive', 'error');
+                return;
+            }
+
+            // Find loan
+            let loan = findLoanById(loanId);
+            if (!loan) {
+                showResult('paymentResult', 'Loan not found', 'error');
+                return;
+            }
+
+            // Create payment
+            let payment = {
+                id: 'PAY' + String(paymentCounter).padStart(3, '0'),
+                loanId: loanId,
+                amount: paymentAmount,
+                type: paymentType,
+                date: getCurrentDate()
+            };
+
+            payments.push(payment);
+            paymentCounter++;
+
+            // Calculate remaining balance
+            let totalPaid = getTotalPaidForLoan(loanId);
+            let remainingBalance = loan.totalAmount - totalPaid;
+            let emisLeft = remainingBalance > 0 ? Math.ceil(remainingBalance / loan.emi) : 0;
+
+            let resultHtml = '<h3>Payment Recorded Successfully!</h3>';
+            resultHtml += '<p><strong>Payment ID:</strong> ' + payment.id + '</p>';
+            resultHtml += '<p><strong>Amount Paid:</strong> ₹' + paymentAmount.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Remaining Balance:</strong> ₹' + Math.max(0, remainingBalance).toLocaleString() + '</p>';
+            resultHtml += '<p><strong>EMIs Left:</strong> ' + emisLeft + '</p>';
+
+            showResult('paymentResult', resultHtml, 'result');
+
+            // Clear form
+            document.getElementById('paymentAmount').value = '';
+        }
+
+        // View ledger
+        function viewLedger() {
+            let loanId = document.getElementById('ledgerLoanId').value;
+
+            if (!loanId) {
+                showResult('ledgerResult', 'Please select a loan', 'error');
+                return;
+            }
+
+            let loan = findLoanById(loanId);
+            if (!loan) {
+                showResult('ledgerResult', 'Loan not found', 'error');
+                return;
+            }
+
+            let loanPayments = getPaymentsForLoan(loanId);
+            let totalPaid = getTotalPaidForLoan(loanId);
+            let remainingBalance = loan.totalAmount - totalPaid;
+
+            let resultHtml = '<div class="loan-info">';
+            resultHtml += '<h3>Loan Details: ' + loan.id + '</h3>';
+            resultHtml += '<p><strong>Customer:</strong> ' + loan.customerName + '</p>';
+            resultHtml += '<p><strong>Principal:</strong> ₹' + loan.amount.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Total Amount:</strong> ₹' + loan.totalAmount.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Monthly EMI:</strong> ₹' + loan.emi.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Amount Paid:</strong> ₹' + totalPaid.toLocaleString() + '</p>';
+            resultHtml += '<p><strong>Balance:</strong> ₹' + Math.max(0, remainingBalance).toLocaleString() + '</p>';
+            resultHtml += '</div>';
+
+            if (loanPayments.length > 0) {
+                resultHtml += '<h4>Payment History:</h4>';
+                resultHtml += '<table>';
+                resultHtml += '<tr><th>Payment ID</th><th>Date</th><th>Amount</th><th>Type</th></tr>';
+                
+                for (let i = 0; i < loanPayments.length; i++) {
+                    let payment = loanPayments[i];
+                    resultHtml += '<tr>';
+                    resultHtml += '<td>' + payment.id + '</td>';
+                    resultHtml += '<td>' + payment.date + '</td>';
+                    resultHtml += '<td>₹' + payment.amount.toLocaleString() + '</td>';
+                    resultHtml += '<td>' + payment.type + '</td>';
+                    resultHtml += '</tr>';
+                }
+                resultHtml += '</table>';
+            } else {
+                resultHtml += '<p>No payments made yet.</p>';
+            }
+
+            showResult('ledgerResult', resultHtml, 'result');
+        }
+
+        // Show all loans
+        function showAllLoans() {
+            if (loans.length === 0) {
+                showResult('allLoansResult', 'No loans found', 'error');
+                return;
+            }
+
+            let resultHtml = '<h3>All Loans:</h3>';
+            resultHtml += '<table>';
+            resultHtml += '<tr><th>Loan ID</th><th>Customer</th><th>Principal</th><th>Total Amount</th><th>EMI</th><th>Amount Paid</th><th>Balance</th></tr>';
+
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                let totalPaid = getTotalPaidForLoan(loan.id);
+                let balance = loan.totalAmount - totalPaid;
+
+                resultHtml += '<tr>';
+                resultHtml += '<td>' + loan.id + '</td>';
+                resultHtml += '<td>' + loan.customerName + '</td>';
+                resultHtml += '<td>₹' + loan.amount.toLocaleString() + '</td>';
+                resultHtml += '<td>₹' + loan.totalAmount.toLocaleString() + '</td>';
+                resultHtml += '<td>₹' + loan.emi.toLocaleString() + '</td>';
+                resultHtml += '<td>₹' + totalPaid.toLocaleString() + '</td>';
+                resultHtml += '<td>₹' + Math.max(0, balance).toLocaleString() + '</td>';
+                resultHtml += '</tr>';
+            }
+            resultHtml += '</table>';
+
+            showResult('allLoansResult', resultHtml, 'result');
+        }
+
+        // Helper functions
+        function showResult(elementId, message, type) {
+            let element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = type;
+        }
+
+        function findLoanById(loanId) {
+            for (let i = 0; i < loans.length; i++) {
+                if (loans[i].id === loanId) {
+                    return loans[i];
+                }
+            }
+            return null;
+        }
+
+        function getPaymentsForLoan(loanId) {
+            let loanPayments = [];
+            for (let i = 0; i < payments.length; i++) {
+                if (payments[i].loanId === loanId) {
+                    loanPayments.push(payments[i]);
+                }
+            }
+            return loanPayments;
+        }
+
+        function getTotalPaidForLoan(loanId) {
+            let total = 0;
+            for (let i = 0; i < payments.length; i++) {
+                if (payments[i].loanId === loanId) {
+                    total += payments[i].amount;
+                }
+            }
+            return total;
+        }
+
+        function getCurrentDate() {
+            let today = new Date();
+            let year = today.getFullYear();
+            let month = String(today.getMonth() + 1).padStart(2, '0');
+            let day = String(today.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        function updateLoanDropdowns() {
+            let paymentSelect = document.getElementById('paymentLoanId');
+            let ledgerSelect = document.getElementById('ledgerLoanId');
+
+            // Clear existing options (except first one)
+            paymentSelect.innerHTML = '<option value="">Select a loan</option>';
+            ledgerSelect.innerHTML = '<option value="">Select a loan</option>';
+
+            // Add loans to dropdowns
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                let option = document.createElement('option');
+                option.value = loan.id;
+                option.text = loan.id + ' - ' + loan.customerName + ' (₹' + loan.amount.toLocaleString() + ')';
+                
+                paymentSelect.add(option.cloneNode(true));
+                ledgerSelect.add(option);
+            }
+        }
+
+        // Initialize dropdowns when page loads
+        updateLoanDropdowns();
+    </script>
+</body>
+</html> 
